@@ -1,0 +1,30 @@
+# ============================================
+# 📦 .gitignore — Files Git should NEVER track
+# ============================================
+
+# Dependencies (we reinstall with npm install)
+node_modules/
+
+# Build output (we rebuild with npm run build)
+dist/
+
+# Environment variables (CONTAINS SECRETS!)
+.env
+
+# Log files
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# PM2
+.pm2/
+
+# Test coverage
+coverage/
