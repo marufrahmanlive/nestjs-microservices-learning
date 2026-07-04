@@ -31,7 +31,7 @@ module.exports = {
       script: './dist/main.js',
       // instances: 1,
       // exec_mode: 'fork',
-      instances: 3, //needed for zero downtime
+      instances: 4, //needed for zero downtime
       exec_mode: 'cluster', //needed for zero downtime
 
       env_file: '.env.production',
