@@ -13,32 +13,28 @@
  * 5. MONITORING — `pm2 status` shows CPU, memory, uptime
  *
  * Usage:
- *   pm2 start ecosystem.config.js   → start the app
- *   pm2 status                       → check running apps
- *   pm2 logs nestjs-app               → view logs
- *   pm2 restart nestjs-app            → restart the app
- *   pm2 stop nestjs-app               → stop the app
- *   pm2 save                         → save process list for auto-restart on reboot
- *   pm2 startup                      → configure PM2 to start on system boot
+ *   pm2 start ecosystem.config.js --env production   → start with env_production
+ *   pm2 status                                        → check running apps
+ *   pm2 logs nestjs-app                               → view logs
+ *   pm2 restart nestjs-app                            → restart the app
+ *   pm2 stop nestjs-app                               → stop the app
+ *   pm2 save                                          → save process list for auto-restart on reboot
+ *   pm2 startup                                       → configure PM2 to start on system boot
+ *
+ * IMPORTANT: pm2 --env production reads the env_production block below.
+ * It does NOT read .env files — those are handled by NestJS ConfigModule.
  */
 module.exports = {
   apps: [
     {
-      name: 'nestjs-app', // Name shown in `pm2 status`
-      script: './dist/main.js', // The compiled JavaScript entry point
+      name: 'nestjs-app',
+      script: './dist/main.js',
       instances: 1,
       exec_mode: 'fork',
-      // instances: 'max', // Number of instances (1 = single instance)
-      // exec_mode: 'cluster', // 'fork' = simple single process (good for beginners)
-      env: {
-        NODE_ENV: 'production', // Environment variable
-        PORT: 3000, // Port to listen on
-      },
-      // Log file locations (so we can debug issues)
+      env_file: '.env.production',
       error_file: './logs/err.log',
       out_file: './logs/out.log',
       log_file: './logs/combined.log',
-      // Time format in logs
       time: true,
 
       autorestart: true,
