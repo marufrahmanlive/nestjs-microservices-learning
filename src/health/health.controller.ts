@@ -32,7 +32,8 @@ export class HealthController {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(), // seconds since the app started
-      version: '1.0.5', // You can also return the app version here
+      version: '1.0.6', // You can also return the app version here
+      total_instances: 5,
       message: 'Books API is running! 🚀',
 
       pid: process.pid,
