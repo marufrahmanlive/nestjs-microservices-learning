@@ -11,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Action Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -21,7 +20,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run tests
         run: npm run test
@@ -35,8 +34,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
-      - name: Action Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.7
@@ -67,7 +65,7 @@ jobs:
             git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
 
             # Install ALL dependencies (need @nestjs/cli for build)
-            npm ci
+            npm install
 
             # Build the application
             npm run build
