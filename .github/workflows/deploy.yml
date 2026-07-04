@@ -59,24 +59,22 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           envs: GIT_TOKEN
           script: |
-            # Define app directory and repo URL (HTTPS, no token in URL for security)
+            # Define app directory
             APP_DIR="/home/deploy/nestjs-app"
-            REPO_URL="https://github.com/marufrahmanlive/nestjs-microservices-learning.git"
+            GITHUB_REPO="marufrahmanlive/nestjs-microservices-learning"
 
             # Check if app directory exists — if not, do first-time clone
             if [ ! -d "$APP_DIR" ]; then
               echo "=== First-time setup: cloning repository ==="
               mkdir -p /home/deploy
-              git -c http.extraHeader="Authorization: Bearer ${GIT_TOKEN}" \
-                clone "$REPO_URL" "$APP_DIR"
+              git clone "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" "$APP_DIR"
             fi
 
             # Navigate to app directory
             cd "$APP_DIR"
 
-            # Pull latest changes (pass token via header to avoid persisting it)
-            git -c http.extraHeader="Authorization: Bearer ${GIT_TOKEN}" \
-              pull origin main
+            # Pull latest changes
+            git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
 
             # Install dependencies (omit dev deps in production)
             npm install --omit=dev
