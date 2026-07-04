@@ -60,6 +60,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   logger.log(`🚀 Application is running on: http://localhost:${port}`);
   logger.log(`📚 Environment: ${process.env.NODE_ENV ?? 'development'}`);
+  logger.log(`📝 MONGODB_URI: ${process.env.MONGODB_URI ?? 'not set'}`);
 }
 
 bootstrap();
