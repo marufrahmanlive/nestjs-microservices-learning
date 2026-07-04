@@ -40,31 +40,36 @@ jobs:
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.7
-        env:
-          GIT_TOKEN: ${{ secrets.GIT_PAT }}
+        #env:
+        #GIT_TOKEN: ${{ secrets.GIT_PAT }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
-          envs: GIT_TOKEN
+          #envs: GIT_TOKEN
           script: |
             # Define app directory
             APP_DIR="/home/deploy/nestjs-app"
             GITHUB_REPO="marufrahmanlive/nestjs-microservices-learning"
 
             # Check if app directory exists — if not, do first-time clone
-            if [ ! -d "$APP_DIR" ]; then
+            if [ ! -d "$APP_DIR/.git" ]; then
               echo "=== First-time setup: cloning repository ==="
               mkdir -p /home/deploy
-              git clone "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" "$APP_DIR"
+              #git clone "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" "$APP_DIR"
+              git clone git@github.com:marufrahmanlive/nestjs-microservices-learning.git "$APP_DIR"
             fi
 
             # Navigate to app directory
             cd "$APP_DIR"
 
             # Pull latest changes
-            git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
+            # git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
+
+            #git pull origin main
+            git fetch origin
+            git reset --hard origin/main
 
             # Install ALL dependencies (need @nestjs/cli for build)
             npm install
