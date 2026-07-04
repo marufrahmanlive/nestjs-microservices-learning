@@ -15,22 +15,24 @@
  * Usage:
  *   pm2 start ecosystem.config.js   → start the app
  *   pm2 status                       → check running apps
- *   pm2 logs books-api               → view logs
- *   pm2 restart books-api            → restart the app
- *   pm2 stop books-api               → stop the app
+ *   pm2 logs nestjs-app               → view logs
+ *   pm2 restart nestjs-app            → restart the app
+ *   pm2 stop nestjs-app               → stop the app
  *   pm2 save                         → save process list for auto-restart on reboot
  *   pm2 startup                      → configure PM2 to start on system boot
  */
 module.exports = {
   apps: [
     {
-      name: 'books-api',                    // Name shown in `pm2 status`
-      script: './dist/main.js',             // The compiled JavaScript entry point
-      instances: 1,                          // Number of instances (1 = single instance)
-      exec_mode: 'fork',                     // 'fork' = simple single process (good for beginners)
+      name: 'nestjs-app', // Name shown in `pm2 status`
+      script: './dist/main.js', // The compiled JavaScript entry point
+      instances: 1,
+      exec_mode: 'fork',
+      // instances: 'max', // Number of instances (1 = single instance)
+      // exec_mode: 'cluster', // 'fork' = simple single process (good for beginners)
       env: {
-        NODE_ENV: 'production',              // Environment variable
-        PORT: 3000,                          // Port to listen on
+        NODE_ENV: 'production', // Environment variable
+        PORT: 3000, // Port to listen on
       },
       // Log file locations (so we can debug issues)
       error_file: './logs/err.log',
@@ -38,6 +40,10 @@ module.exports = {
       log_file: './logs/combined.log',
       // Time format in logs
       time: true,
+
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
     },
   ],
 };
