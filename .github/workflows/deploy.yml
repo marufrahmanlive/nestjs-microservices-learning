@@ -100,7 +100,7 @@ jobs:
             if pm2 describe nestjs-app >/dev/null 2>&1; then
                 log "Reloading application"
                 #pm2 restart ecosystem.config.js --env production
-                pm2 reload ecosystem.config.js --env production
+                pm2 reload ecosystem.config.js --update-env --env production
                 #success "Application reloaded"
             else
                 log "Starting application"
