@@ -49,42 +49,69 @@ jobs:
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           #envs: GIT_TOKEN
           script: |
-            # Define app directory
-            APP_DIR="/home/deploy/nestjs-app"
-            GITHUB_REPO="marufrahmanlive/nestjs-microservices-learning"
+            #!/bin/bash
+            set -Eeuo pipefail
 
-            # Check if app directory exists — if not, do first-time clone
+            log() {
+              echo ""
+              echo "=========================================="
+              echo "🚀 $1"
+              echo "=========================================="
+            }
+
+            success() {
+              echo "✅ $1"
+            }
+
+            trap 'echo ""; echo "❌ Deployment failed at line $LINENO"; exit 1' ERR
+
+            APP_DIR="/home/deploy/nestjs-app"
+
+            log "Checking repository"
+
             if [ ! -d "$APP_DIR/.git" ]; then
-              echo "=== First-time setup: cloning repository ==="
+              log "Repository not found. Cloning..."
               mkdir -p /home/deploy
-              #git clone "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" "$APP_DIR"
               git clone git@github.com:marufrahmanlive/nestjs-microservices-learning.git "$APP_DIR"
+              success "Repository cloned"
+            else
+              success "Repository already exists"
             fi
 
-            # Navigate to app directory
+            log "Moving to project directory"
             cd "$APP_DIR"
+            success "Current directory: $(pwd)"
 
-            # Pull latest changes
-            # git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
-
-            #git pull origin main
+            log "Fetching latest code"
             git fetch origin
             git reset --hard origin/main
+            success "Latest code pulled"
 
-            # Install ALL dependencies (need @nestjs/cli for build)
+            log "Installing dependencies"
             npm install
+            success "Dependencies installed"
 
-            # Build the application
+            log "Building application"
             npm run build
+            success "Build completed"
 
-            # Start or restart PM2 process
-            if pm2 list | grep -q "nestjs-app"; then
-              echo "=== Restarting existing PM2 process ==="
-              pm2 restart ecosystem.config.js --env production
+            log "Checking PM2 process"
+
+            if pm2 describe nestjs-app >/dev/null 2>&1; then
+                log "Restarting application"
+                pm2 restart ecosystem.config.js --env production
+                success "Application restarted"
             else
-              echo "=== Starting new PM2 process ==="
-              pm2 start ecosystem.config.js --env production
+                log "Starting application"
+                pm2 start ecosystem.config.js --env production
+                success "Application started"
             fi
 
-            # Save PM2 configuration
+            log "Saving PM2 configuration"
             pm2 save
+            success "PM2 configuration saved"
+
+            echo ""
+            echo "🎉======================================="
+            echo "🎉 Deployment completed successfully!"
+            echo "🎉======================================="
