@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import * as os from 'os';
 
 /**
  * 💚 HealthController — Health Check Endpoint
@@ -24,12 +25,19 @@ import { Controller, Get } from '@nestjs/common';
 export class HealthController {
   @Get()
   check() {
+    console.log(
+      `Handled by instance ${process.env.NODE_APP_INSTANCE}, PID ${process.pid}, hostname ${os.hostname()}`,
+    );
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(), // seconds since the app started
       version: '1.0.1', // You can also return the app version here
       message: 'Books API is running! 🚀',
+
+      pid: process.pid,
+      instance: process.env.NODE_APP_INSTANCE,
+      hostname: os.hostname(),
     };
   }
 }
