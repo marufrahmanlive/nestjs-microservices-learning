@@ -43,6 +43,10 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '500M',
+
+      wait_ready: false,
+      listen_timeout: 10000,
+      kill_timeout: 5000,
     },
   ],
 };
