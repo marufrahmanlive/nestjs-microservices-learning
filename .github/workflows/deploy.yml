@@ -76,8 +76,8 @@ jobs:
             # Pull latest changes
             git pull "https://${GIT_TOKEN}@github.com/${GITHUB_REPO}.git" main
 
-            # Install dependencies (omit dev deps in production)
-            npm install --omit=dev
+            # Install ALL dependencies (need @nestjs/cli for build)
+            npm install
 
             # Build the application
             npm run build
