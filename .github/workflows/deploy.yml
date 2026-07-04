@@ -50,28 +50,33 @@ jobs:
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.7
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_PAT }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          envs: GIT_TOKEN
           script: |
-            # Define app directory
+            # Define app directory and repo URL (HTTPS, no token in URL for security)
             APP_DIR="/home/deploy/nestjs-app"
-            REPO_URL="git@github.personal.com:marufrahmanlive/nestjs-microservices-learning.git"
+            REPO_URL="https://github.com/marufrahmanlive/nestjs-microservices-learning.git"
 
             # Check if app directory exists — if not, do first-time clone
             if [ ! -d "$APP_DIR" ]; then
               echo "=== First-time setup: cloning repository ==="
               mkdir -p /home/deploy
-              git clone "$REPO_URL" "$APP_DIR"
+              git -c http.extraHeader="Authorization: Bearer ${GIT_TOKEN}" \
+                clone "$REPO_URL" "$APP_DIR"
             fi
 
             # Navigate to app directory
             cd "$APP_DIR"
 
-            # Pull latest changes
-            git pull origin main
+            # Pull latest changes (pass token via header to avoid persisting it)
+            git -c http.extraHeader="Authorization: Bearer ${GIT_TOKEN}" \
+              pull origin main
 
             # Install dependencies (omit dev deps in production)
             npm install --omit=dev
