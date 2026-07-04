@@ -23,7 +23,8 @@ import { HealthModule } from './health/health.module';
     // isGlobal: true means we don't need to import ConfigModule in every module
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      // Tries .env.production first (manually created on VPS), falls back to .env locally
+      envFilePath: ['.env.production', '.env'],
     }),
 
     // WHY MongooseModule.forRootAsync()?
