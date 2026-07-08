@@ -164,8 +164,20 @@ pm2 start ecosystem.config.js --env production
 pm2 scale nestjs-app 4
 ```
 
+13. Auto restart pm2 after reboot
+
+```
+ pm2 startup
+ pm2 save
+
+``
+
 # Reference Website
 
 ```
+
 https://huyha.zone/blog/post/deploy-nestjs-to-vultr-vps-github-actions/
+
+```
+
 ```
