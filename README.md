@@ -109,9 +109,13 @@ cp .env.example .env
 
 Your `.env`:
 
-````env
+```env
 PORT=3000
 MONGODB_URI=mongodb+srv://books-admin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/books-db?retryWrites=true&w=majority
+NODE_ENV=development
+```
+
+> ⚠️ NEVER commit `.env` — already in `.gitignore`!
 
 ---
 
@@ -123,7 +127,7 @@ npm install
 npm run build
 npm test              # No MongoDB needed!
 npm run start:dev     # Needs MongoDB URI in .env
-````
+```
 
 Expected startup log:
 
@@ -187,18 +191,45 @@ curl -X POST http://localhost:3000/books -H "Content-Type: application/json" \
 
 ### 3. Get All Books
 
-````bash
+```bash
 curl http://localhost:3000/books
+```
 
----
+**→ 200:** Array of 3 books
+
+### 4. Get One Book
+
+```bash
+curl http://localhost:3000/books/{ID}    # Replace {ID} with actual _id
+```
+
+**→ 200:** Single book object
+
+### 5. Update a Book
+
+```bash
+curl -X PATCH http://localhost:3000/books/{ID} -H "Content-Type: application/json" \
+  -d '{"description":"Updated description"}'
+```
+
+**→ 200:** Updated book with new `updatedAt`
+
+### 6. Delete a Book
+
+```bash
+curl -X DELETE http://localhost:3000/books/{ID}
+```
+
+**→ 200:** `{ "message": "Book deleted successfully" }`
 
 ### 7. Test Validation Errors
 
 **❌ Missing required fields:**
+
 ```bash
 curl -X POST http://localhost:3000/books -H "Content-Type: application/json" \
   -d '{"title":"Missing Author"}'
-````
+```
 
 **→ 400:** `["author must be a string", "author should not be empty", "year must be a number ..."]`
 
@@ -259,18 +290,18 @@ Expected output:
 
 ```
  PASS  src/books/books.controller.spec.ts
-  BooksController
-    ✓ should be defined
-    findAll
-      ✓ should return an array of books
-    findOne
-      ✓ should return a single book
-    create
-      ✓ should create a book
-    update
-      ✓ should update a book
-    remove
-      ✓ should delete a book
+   BooksController
+     ✓ should be defined
+     findAll
+       ✓ should return an array of books
+     findOne
+       ✓ should return a single book
+     create
+       ✓ should create a book
+     update
+       ✓ should update a book
+     remove
+       ✓ should delete a book
 
 Tests: 6 passed, 6 total
 ```
@@ -310,133 +341,150 @@ pm2 save && pm2 startup        # Survive reboot
 
 ---
 
-## 🛡️ Security
+## 🖥️ Vultr VPS Setup Guide
 
-| Feature                 | Purpose                   |
-| ----------------------- | ------------------------- |
-| `whitelist: true`       | Strips unknown properties |
-| `forbidNonWhitelisted`  | Rejects extra fields      |
-| Global Exception Filter | Hides stack traces        |
-| `.env` + `.gitignore`   | Secrets stay local        |
-| CORS                    | Controls domain access    |
+Complete step-by-step instructions for setting up a Vultr VPS to host the NestJS application.
 
----
+### 1. SSH Key Setup (Local Machine)
 
-## 📄 License
-
-MIT — free to use for learning!
-
-````
-**→ 200:** Array of 3 books
-
-### 4. Get One Book
-```bash
-curl http://localhost:3000/books/{ID}    # Replace {ID} with actual _id
-````
-
-**→ 200:** Single book object
-
-### 5. Update a Book
+Create a custom-named SSH key for Vultr:
 
 ```bash
-curl -X PATCH http://localhost:3000/books/{ID} -H "Content-Type: application/json" \
-  -d '{"description":"Updated description"}'
+ssh-keygen -t ed25519 -C "<your-email>"
 ```
 
-**→ 200:** Updated book with new `updatedAt`
+When prompted for the file name:
 
-### 6. Delete a Book
+```
+Enter file in which to save the key: C:\Users\<your-user>\.ssh\id_vultr_ed25519
+```
+
+Passphrase password: `YOUR_PASSPHRASE`
+
+Display the public SSH key:
 
 ```bash
-curl -X DELETE http://localhost:3000/books/{ID}
-```
-
-**→ 200:** `{ "message": "Book deleted successfully" }`
-NODE_ENV=development
-
-```
-
-> ⚠️ NEVER commit `.env` — already in `.gitignore`!
-```
-
-# All Instructions
-
-```
-1. create a custom named SSH Key
-ssh-keygen -t ed25519 -C "marufrahmanbd08@gmail.com"
-provide custom file name:
-Enter file in which to save the key (C:\Users\maruf/.ssh/id_ed25519): C:\Users\maruf/.ssh/id_vultr_ed25519
-passphase password: 123456
-
-2. Display the public SSH key
 type $env:USERPROFILE\.ssh\id_vultr_ed25519.pub
+```
 
-3. Connect to the server with custom private ssh key
-ssh -i $env:USERPROFILE\.ssh\id_vultr_ed25519 root@139.84.172.55
-ssh root@139.84.172.55
-ssh -i $env:USERPROFILE\.ssh\id_vultr_ed25519 deploy@139.84.172.55
+### 2. Connect to the Server
 
+```bash
+ssh -i $env:USERPROFILE\.ssh\id_vultr_ed25519 root@<your-server-ip>
+```
 
-provide passphase password: 123456
+Or without custom key path:
 
-4. Update and Upgrade APT Registry
+```bash
+ssh root@<your-server-ip>
+```
+
+**For Windows — add SSH key to agent (avoids repeated passphrase prompts):**
+
+```bash
+Set-Service -Name ssh-agent -StartupType Manual
+Start-Service ssh-agent
+ssh-add C:\Users\<your-user>\.ssh\id_vultr_ed25519
+```
+
+### 3. Update and Install Dependencies
+
+```bash
 apt update && apt upgrade -y
+```
 
-5. Install nodejs 24 version on server
+Install Node.js 24:
+
+```bash
 curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 apt-get install -y nodejs
 node -v
+```
 
-6. Install pm2 globally
+Install PM2 globally:
+
+```bash
 npm install -g pm2
+```
 
-7. Install Nginx
+Install Nginx:
+
+```bash
 apt install nginx -y
 systemctl start nginx
 systemctl enable nginx
+```
 
-8. Create a non-root user:
+### 4. Create a Non-Root Deploy User
+
+```bash
 adduser deploy
+```
+
+Password: `YOUR_DEPLOY_PASSWORD`
+
+```bash
 usermod -aG sudo deploy
 mkdir -p /home/deploy/.ssh
 cp ~/.ssh/authorized_keys /home/deploy/.ssh/
 chown -R deploy:deploy /home/deploy/.ssh
 chmod 700 /home/deploy/.ssh
 chmod 600 /home/deploy/.ssh/authorized_keys
-#deploy user password is "a684008z"
+```
 
-9. After creating the deploy user from root then login to server as deploy user from another terminal
-ssh -i $env:USERPROFILE\.ssh\id_vultr_ed25519 deploy@139.84.172.55
-ssh deploy@139.84.172.55
+After creating the deploy user, login from another terminal:
 
+```bash
+ssh -i $env:USERPROFILE\.ssh\id_vultr_ed25519 deploy@<your-server-ip>
+```
 
-9. CreateGIT_PAT variable for cloning rivate repo in server
+Or copy the public key to the VPS using Git Bash:
 
-10. if ssh is created with passphrase then create a varibale in git with VPS_SSH_PASSPHRASE
+```bash
+ssh-copy-id deploy@<your-server-ip>
+```
 
-11. Generate a new SSH key in server
+If SSH key is added to the agent, login automatically:
+
+```bash
+ssh deploy@<your-server-ip>
+```
+
+### 5. GitHub SSH Key (For Private Repos on Server)
+
+Generate a new SSH key on the VPS server as the deploy user:
+
+```bash
 ssh-keygen -t ed25519 -C "deploy@server"
 cat ~/.ssh/id_ed25519.pub
-Add the public key to GitHub
-Settings-Deploy Keys-Add Deploy Key
-Tell the server to trust GitHub
+```
+
+Add the public key to GitHub: **Settings → Deploy Keys → Add Deploy Key**
+
+Tell the server to trust GitHub:
+
+```bash
 ssh-keyscan github.com >> ~/.ssh/known_hosts
-Verify
 cat ~/.ssh/known_hosts
-Test the connection
+```
+
+Test the connection:
+
+```bash
 ssh -T git@github.com
+```
 
-12.
-# Create environment file
-sudo nano /home/deploy/nestjs-app/.env.production
-PORT=3000
-MONGODB_URI=mongodb+srv://root:a684008z@cluster0.hde6dpq.mongodb.net/books-db?appName=Cluster0&retryWrites=true&w=majority
-NODE_ENV=production
+> 💡 If your SSH key has a passphrase, create a GitHub Actions secret `VPS_SSH_PASSPHRASE`. Also create a `GIT_PAT` secret for cloning private repos.
 
+### 6. Nginx Reverse Proxy
 
+Create the site configuration:
 
-11. Setting Up Nginx Reverse Proxy
+```bash
 sudo nano /etc/nginx/sites-available/nestjs-app
+```
+
+```nginx
 server {
     listen 80;
     server_name _;
@@ -453,39 +501,107 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 }
+```
+
+Enable the site and remove the default:
+
+```bash
 sudo ln -s /etc/nginx/sites-available/nestjs-app /etc/nginx/sites-enabled/
-ls -l /etc/nginx/sites-enabled/
-```
-
-sudo unlink /etc/nginx/sites-enabled/default
-or
 sudo rm /etc/nginx/sites-enabled/default
-
-```
 sudo nginx -t
 sudo systemctl restart nginx
+```
 
+### 7. Environment Variables (Production)
 
+After the GitHub workflow creates the `/home/deploy/nestjs-app/` folder:
 
-11.
-For nginx if default file exists inside nginx then remove it by the following commands
-ls -la /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl reload nginx
+```bash
+sudo nano /home/deploy/nestjs-app/.env.production
+```
 
+```env
+PORT=3000
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/books-db?retryWrites=true&w=majority
+NODE_ENV=production
+```
 
-12. To See pm2 instances count to reflect in the system then run the below:
+> ⚠️ Replace `<username>`, `<password>`, and `<cluster>` with your actual MongoDB Atlas credentials.
+
+### 8. Firewall Configuration
+
+```bash
+sudo ufw enable
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+sudo ufw status
+```
+
+### 9. DNS Records (Namecheap)
+
+Add the following records:
+
+| Type  | Host    | Value              | TTL       |
+| ----- | ------- | ------------------ | --------- |
+| A     | api     | `<your-server-ip>` | Automatic |
+| CNAME | www.api | `<your-domain>`    | Automatic |
+
+### 10. SSL Certificate with Let's Encrypt
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d <your-domain> -d www.<your-domain>
+```
+
+Test the URLs after SSL configuration:
+
+```
+https://<your-domain>/health
+https://www.<your-domain>/health
+```
+
+### 11. PM2 Configuration
+
+After deployment, restart PM2 with the ecosystem config:
+
+```bash
 pm2 delete nestjs-app
 pm2 start ecosystem.config.js --env production
+```
 
-13. Increase instances later from server shell
+Scale instances as needed:
+
+```bash
 pm2 scale nestjs-app 4
-
 ```
 
-# Reference Website
+Auto-restart PM2 after server reboot:
 
+```bash
+pm2 startup
+pm2 save
 ```
-https://huyha.zone/blog/post/deploy-nestjs-to-vultr-vps-github-actions/
-```
+
+---
+
+## 🛡️ Security
+
+| Feature                 | Purpose                   |
+| ----------------------- | ------------------------- |
+| `whitelist: true`       | Strips unknown properties |
+| `forbidNonWhitelisted`  | Rejects extra fields      |
+| Global Exception Filter | Hides stack traces        |
+| `.env` + `.gitignore`   | Secrets stay local        |
+| CORS                    | Controls domain access    |
+
+---
+
+## 📖 Reference
+
+- [Deploy NestJS to Vultr VPS with GitHub Actions](https://huyha.zone/blog/post/deploy-nestjs-to-vultr-vps-github-actions/)
+
+---
+
+## 📄 License
+
+MIT — free to use for learning!
